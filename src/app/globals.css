@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #050505;
+  --color-secondary: #111111;
+  --color-gold: #D4AF37;
+  --color-gold-light: #F3E5AB;
+  --color-gold-glow: rgba(212, 175, 55, 0.15);
+  --color-gold-glow-strong: rgba(212, 175, 55, 0.4);
+  --font-sans: var(--font-outfit), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, serif;
+}
+
+:root {
+  --background: #050505;
+  --foreground: #ffffff;
+  --gold: #D4AF37;
+}
+
+html, body {
+  background-color: #050505;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+  scroll-behavior: auto; /* Handled by Lenis */
+}
+
+/* Custom Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 3px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #D4AF37;
+}
+
+/* Glassmorphism Cards */
+.glass-panel {
+  background: rgba(17, 17, 17, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-panel-gold {
+  background: rgba(17, 17, 17, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.glass-panel-gold:hover {
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.08);
+}
+
+/* Custom Micro-Animations */
+@keyframes goldGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.25);
+  }
+}
+
+.animate-gold-glow {
+  animation: goldGlow 4s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.bg-gold-radial {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(5, 5, 5, 0) 70%);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FFF9E6 0%, #D4AF37 50%, #8A6F27 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Lenis scroll classes */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overflow: clip;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Custom Cursor styling */
+.custom-cursor {
+  width: 8px;
+  height: 8px;
+  background-color: #D4AF37;
+  border-radius: 50%;
+  position: fixed;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transition: width 0.2s, height 0.2s, background-color 0.2s;
+}
+
+.custom-cursor-ring {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 50%;
+  position: fixed;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9998;
+  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), height 0.3s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s;
+}
+
+.cursor-hover .custom-cursor {
+  width: 16px;
+  height: 16px;
+  background-color: #ffffff;
+  mix-blend-mode: normal;
+}
+
+.cursor-hover .custom-cursor-ring {
+  width: 60px;
+  height: 60px;
+  border-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.cursor-view .custom-cursor-ring {
+  width: 80px;
+  height: 80px;
+  border-color: #D4AF37;
+  background-color: rgba(212, 175, 55, 0.1);
+}
+
+.cursor-view::after {
+  content: "VIEW";
+  color: #D4AF37;
+  font-size: 10px;
+  letter-spacing: 2px;
+  position: fixed;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Hide default cursor on desktop when custom cursor is active */
+@media (min-width: 1024px) {
+  .custom-cursor-enabled,
+  .custom-cursor-enabled * {
+    cursor: none !important;
+  }
+}
