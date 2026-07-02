@@ -35,21 +35,49 @@ async function saveBooking(data: BookingPayload): Promise<number> {
   return Number(firstRow?.id);
 }
 
-/** Send email notification to the studio owner via Gmail SMTP */
+/** Send email notification to the studio owner via SMTP */
 async function sendEmail(data: BookingPayload, bookingId: number) {
-  const { OWNER_EMAIL, GMAIL_APP_PASSWORD } = process.env;
-  if (!OWNER_EMAIL || !GMAIL_APP_PASSWORD) {
+  const {
+    OWNER_EMAIL,
+    SMTP_HOST,
+    SMTP_PORT,
+    SMTP_USER,
+    SMTP_PASS,
+    SMTP_SECURE,
+    GMAIL_APP_PASSWORD,
+  } = process.env;
+
+  const emailTo = OWNER_EMAIL || SMTP_USER || "";
+  const emailUser = SMTP_USER || OWNER_EMAIL || "";
+  const emailPass = SMTP_PASS || GMAIL_APP_PASSWORD || "";
+
+  if (!emailTo || !emailUser || !emailPass) {
     console.warn("[Booking] Email env vars not set — skipping email notification.");
     return;
   }
 
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: SMTP_HOST || "smtp.gmail.com",
+    port: Number(SMTP_PORT || 587),
+    secure: String(SMTP_SECURE || "false").toLowerCase() === "true",
     auth: {
-      user: OWNER_EMAIL,
-      pass: GMAIL_APP_PASSWORD,
+      user: emailUser,
+      pass: emailPass,
     },
   });
+
+  const plaintext = [
+    `New booking received`,
+    `Booking ID: #${bookingId}`,
+    `Name: ${data.name}`,
+    `Phone: ${data.phone}`,
+    `Package: ${data.package}`,
+    `Date: ${data.date}`,
+    `Time: ${data.time}`,
+    `Location: ${data.location}`,
+    `Guests: ${data.guests || "Not specified"}`,
+    `Requests: ${data.requests || "None"}`,
+  ].join("\n");
 
   const html = `
     <!DOCTYPE html>
@@ -148,9 +176,10 @@ async function sendEmail(data: BookingPayload, bookingId: number) {
   `;
 
   await transporter.sendMail({
-    from: `"Satish Photography Booking" <${OWNER_EMAIL}>`,
-    to: OWNER_EMAIL,
+    from: `"Satish Photography Booking" <${emailUser}>`,
+    to: emailTo,
     subject: `📸 New Booking #${bookingId} — ${data.name} | ${data.package}`,
+    text: plaintext,
     html,
   });
 }
@@ -215,9 +244,10 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ success: true, bookingId });
   } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[Booking API] Unhandled error:", err);
     return Response.json(
-      { success: false, error: "Internal server error. Please try again." },
+      { success: false, error: `Booking failed: ${message}` },
       { status: 500 }
     );
   }
