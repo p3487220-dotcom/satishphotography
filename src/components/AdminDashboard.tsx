@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { parseApiJson } from "@/lib/api";
 
 type Booking = {
   id: number;
@@ -25,7 +26,7 @@ export default function AdminDashboard() {
       setLoading(true);
       const res = await fetch("/api/admin/me");
       if (res.ok) {
-        const j = await res.json();
+        const j = await parseApiJson<{ authenticated: boolean; user?: string }>(res);
         setAuth(j);
       } else {
         setAuth({ authenticated: false });
@@ -42,7 +43,7 @@ export default function AdminDashboard() {
     try {
       const res = await fetch("/api/admin/bookings");
       if (!res.ok) throw new Error("Unauthorized or server error");
-      const j = await res.json();
+      const j = await parseApiJson<{ bookings?: Booking[] }>(res);
       setBookings(j.bookings || []);
     } catch (err: any) {
       setError(err.message || "Failed to fetch bookings");
@@ -64,7 +65,7 @@ export default function AdminDashboard() {
       setAuth({ authenticated: true, user: username });
       fetchBookings();
     } else {
-      const j = await res.json();
+      const j = await parseApiJson<{ error?: string }>(res);
       setError(j?.error || "Login failed");
     }
   }

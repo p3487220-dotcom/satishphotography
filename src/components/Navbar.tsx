@@ -59,7 +59,7 @@ export default function Navbar() {
           >
             <Camera className="w-6 h-6 text-gold group-hover:rotate-12 transition-transform duration-300" />
             <span className="font-serif text-xl tracking-[0.15em] font-light">
-              SATISH<span className="text-gold font-normal">.</span>
+              SATISH PHOTOGRAPHY<span className="text-gold font-normal">.</span>
             </span>
           </a>
 

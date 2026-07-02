@@ -55,7 +55,7 @@ export default function Contact() {
             Get In Touch
           </span>
           <h2 className="text-3xl md:text-5xl font-serif font-light tracking-wide text-white">
-            Connect With Satish
+            Connect With Satish Photography
           </h2>
           <div className="w-12 h-[1px] bg-gold mx-auto mt-6" />
         </div>
@@ -264,7 +264,7 @@ export default function Contact() {
       >
         <MessageCircle className="w-6 h-6" />
         <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 ease-out text-xs font-bold tracking-widest uppercase pl-0 group-hover:pl-2 whitespace-nowrap">
-          Chat With Satish
+          Chat With Satish Photography
         </span>
       </a>
     </section>

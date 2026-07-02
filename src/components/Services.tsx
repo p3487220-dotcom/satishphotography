@@ -82,8 +82,8 @@ const SERVICES: ServiceItem[] = [
   },
   {
     icon: Sunset, // Using Sunset for Drone/Aerial
-    title: "Drone Photography",
-    description: "Stunning high-altitude 4K aerial mapping to bring grand scale and scope to your celebration."
+    title: "Drone Videography",
+    description: "Stunning high-altitude 4K aerial storytelling to bring grand scale and cinematic motion to your celebration."
   },
   {
     icon: Radio,

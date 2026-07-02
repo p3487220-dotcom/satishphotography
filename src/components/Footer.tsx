@@ -18,7 +18,7 @@ export default function Footer() {
         <div className="flex items-center space-x-2">
           <Camera className="w-5 h-5 text-gold" />
           <span className="font-serif text-lg tracking-[0.15em] font-light">
-            SATISH<span className="text-gold font-normal">.</span>
+            SATISH PHOTOGRAPHY<span className="text-gold font-normal">.</span>
           </span>
         </div>
 

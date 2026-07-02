@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { parseApiJson } from "@/lib/api";
 import { Calendar, User, MapPin, Clock, Award, CheckCircle } from "lucide-react";
 
 const PACKAGES = [
@@ -64,7 +65,7 @@ export default function Booking() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      const data = await parseApiJson<{ success?: boolean; error?: string }>(res);
 
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Booking failed. Please try again.");
