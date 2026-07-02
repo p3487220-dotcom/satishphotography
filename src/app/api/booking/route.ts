@@ -20,14 +20,18 @@ interface BookingPayload {
 // Helpers
 // ──────────────────────────────────────────
 
-/** Save booking row to SQLite */
-function saveBooking(data: BookingPayload): number {
-  const stmt = db.prepare(`
-    INSERT INTO bookings (name, phone, package, date, time, location, guests, requests)
-    VALUES (@name, @phone, @package, @date, @time, @location, @guests, @requests)
-  `);
-  const result = stmt.run(data);
-  return result.lastInsertRowid as number;
+/** Save booking row to PostgreSQL */
+async function saveBooking(data: BookingPayload): Promise<number> {
+  const result = await db.query(
+    `
+      INSERT INTO bookings (name, phone, package, date, time, location, guests, requests)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id
+    `,
+    [data.name, data.phone, data.package, data.date, data.time, data.location, data.guests, data.requests]
+  );
+
+  return Number(result.rows[0]?.id);
 }
 
 /** Send email notification to the studio owner via Gmail SMTP */
@@ -199,8 +203,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 1. Save to SQLite database
-    const bookingId = saveBooking(body);
+    // 1. Save to PostgreSQL database
+    const bookingId = await saveBooking(body);
 
     // 2. Send email + WhatsApp in parallel (non-blocking — failures won't break the response)
     await Promise.allSettled([

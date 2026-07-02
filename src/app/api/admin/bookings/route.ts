@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
   if (!res.ok) return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
   try {
-    const rows = db.prepare("SELECT * FROM bookings ORDER BY created_at DESC").all();
-    return Response.json({ success: true, bookings: rows });
+    const result = await db.query("SELECT * FROM bookings ORDER BY created_at DESC");
+    return Response.json({ success: true, bookings: result.rows });
   } catch (err) {
     console.error("[Admin Bookings]", err);
     return Response.json({ success: false, error: "Internal" }, { status: 500 });
@@ -40,7 +40,7 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id) return Response.json({ success: false, error: "Missing id" }, { status: 400 });
-    db.prepare("DELETE FROM bookings WHERE id = ?").run(id);
+    await db.query("DELETE FROM bookings WHERE id = $1", [id]);
     return Response.json({ success: true });
   } catch (err) {
     console.error("[Admin Bookings DELETE]", err);
