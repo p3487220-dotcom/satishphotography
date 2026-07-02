@@ -31,7 +31,8 @@ async function saveBooking(data: BookingPayload): Promise<number> {
     [data.name, data.phone, data.package, data.date, data.time, data.location, data.guests, data.requests]
   );
 
-  return Number(result.rows[0]?.id);
+  const firstRow = result.rows[0] as { id?: number } | undefined;
+  return Number(firstRow?.id);
 }
 
 /** Send email notification to the studio owner via Gmail SMTP */
