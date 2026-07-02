@@ -2,9 +2,6 @@ import { NextRequest } from "next/server";
 import nodemailer from "nodemailer";
 import db from "@/lib/db";
 
-// ──────────────────────────────────────────
-// Types
-// ──────────────────────────────────────────
 interface BookingPayload {
   name: string;
   phone: string;
@@ -16,11 +13,6 @@ interface BookingPayload {
   requests: string;
 }
 
-// ──────────────────────────────────────────
-// Helpers
-// ──────────────────────────────────────────
-
-/** Save booking row to PostgreSQL */
 async function saveBooking(data: BookingPayload): Promise<number> {
   const result = await db.query(
     `
@@ -35,7 +27,6 @@ async function saveBooking(data: BookingPayload): Promise<number> {
   return Number(firstRow?.id);
 }
 
-/** Send email notification to the studio owner via SMTP */
 async function sendEmail(data: BookingPayload, bookingId: number) {
   const {
     OWNER_EMAIL,
@@ -109,67 +100,16 @@ async function sendEmail(data: BookingPayload, bookingId: number) {
           <span class="badge">Booking #${bookingId}</span>
         </div>
         <div class="body">
-          <div class="row">
-            <span class="icon">👤</span>
-            <div style="margin-left:12px">
-              <div class="label">Client Name</div>
-              <div class="value">${data.name}</div>
-            </div>
-          </div>
-          <div class="row">
-            <span class="icon">📞</span>
-            <div style="margin-left:12px">
-              <div class="label">Phone / WhatsApp</div>
-              <div class="value">${data.phone}</div>
-            </div>
-          </div>
-          <div class="row">
-            <span class="icon">📸</span>
-            <div style="margin-left:12px">
-              <div class="label">Package Selected</div>
-              <div class="value">${data.package}</div>
-            </div>
-          </div>
-          <div class="row">
-            <span class="icon">📅</span>
-            <div style="margin-left:12px">
-              <div class="label">Event Date</div>
-              <div class="value">${data.date}</div>
-            </div>
-          </div>
-          <div class="row">
-            <span class="icon">⏰</span>
-            <div style="margin-left:12px">
-              <div class="label">Time Slot</div>
-              <div class="value">${data.time}</div>
-            </div>
-          </div>
-          <div class="row">
-            <span class="icon">📍</span>
-            <div style="margin-left:12px">
-              <div class="label">Location</div>
-              <div class="value">${data.location}</div>
-            </div>
-          </div>
-          <div class="row">
-            <span class="icon">👥</span>
-            <div style="margin-left:12px">
-              <div class="label">Estimated Guests</div>
-              <div class="value">${data.guests || "Not specified"}</div>
-            </div>
-          </div>
-          <div class="row">
-            <span class="icon">✏️</span>
-            <div style="margin-left:12px">
-              <div class="label">Special Requests</div>
-              <div class="value">${data.requests || "None"}</div>
-            </div>
-          </div>
+          <div class="row"><span class="icon">👤</span><div style="margin-left:12px"><div class="label">Client Name</div><div class="value">${data.name}</div></div></div>
+          <div class="row"><span class="icon">📞</span><div style="margin-left:12px"><div class="label">Phone / WhatsApp</div><div class="value">${data.phone}</div></div></div>
+          <div class="row"><span class="icon">📸</span><div style="margin-left:12px"><div class="label">Package Selected</div><div class="value">${data.package}</div></div></div>
+          <div class="row"><span class="icon">📅</span><div style="margin-left:12px"><div class="label">Event Date</div><div class="value">${data.date}</div></div></div>
+          <div class="row"><span class="icon">⏰</span><div style="margin-left:12px"><div class="label">Time Slot</div><div class="value">${data.time}</div></div></div>
+          <div class="row"><span class="icon">📍</span><div style="margin-left:12px"><div class="label">Location</div><div class="value">${data.location}</div></div></div>
+          <div class="row"><span class="icon">👥</span><div style="margin-left:12px"><div class="label">Estimated Guests</div><div class="value">${data.guests || "Not specified"}</div></div></div>
+          <div class="row"><span class="icon">✏️</span><div style="margin-left:12px"><div class="label">Special Requests</div><div class="value">${data.requests || "None"}</div></div></div>
         </div>
-        <div class="footer">
-          Sent automatically from Satish Photography Booking Portal<br/>
-          <span class="booking-id">Booking ID: #${bookingId}</span>
-        </div>
+        <div class="footer">Sent automatically from Satish Photography Booking Portal<br/><span class="booking-id">Booking ID: #${bookingId}</span></div>
       </div>
     </body>
     </html>
@@ -184,71 +124,27 @@ async function sendEmail(data: BookingPayload, bookingId: number) {
   });
 }
 
-/** Send WhatsApp notification via CallMeBot API */
-async function sendWhatsApp(data: BookingPayload, bookingId: number) {
-  const { OWNER_WHATSAPP, CALLMEBOT_API_KEY } = process.env;
-  if (!OWNER_WHATSAPP || !CALLMEBOT_API_KEY) {
-    console.warn("[Booking] WhatsApp env vars not set — skipping WhatsApp notification.");
-    return;
-  }
-
-  const message =
-    `✨ *NEW BOOKING #${bookingId}* ✨\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    `👤 *Name:* ${data.name}\n` +
-    `📞 *Phone:* ${data.phone}\n` +
-    `📸 *Package:* ${data.package}\n` +
-    `📅 *Date:* ${data.date}\n` +
-    `⏰ *Time:* ${data.time}\n` +
-    `📍 *Location:* ${data.location}\n` +
-    `👥 *Guests:* ${data.guests || "N/A"}\n` +
-    `✏️ *Requests:* ${data.requests || "None"}\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    `_Satish Photography Portal_`;
-
-  const encoded = encodeURIComponent(message);
-  const url = `https://api.callmebot.com/whatsapp.php?phone=${OWNER_WHATSAPP}&text=${encoded}&apikey=${CALLMEBOT_API_KEY}`;
-
-  const res = await fetch(url);
-  if (!res.ok) {
-    console.error("[Booking] CallMeBot WhatsApp notification failed:", res.status, await res.text());
-  }
-}
-
-// ──────────────────────────────────────────
-// POST /api/booking
-// ──────────────────────────────────────────
 export async function POST(request: NextRequest) {
   try {
     const body: BookingPayload = await request.json();
 
-    // Validate required fields
     const required: (keyof BookingPayload)[] = ["name", "phone", "package", "date", "time", "location"];
     for (const field of required) {
       if (!body[field]?.trim()) {
-        return Response.json(
-          { success: false, error: `Missing required field: ${field}` },
-          { status: 400 }
-        );
+        return Response.json({ success: false, error: `Missing required field: ${field}` }, { status: 400 });
       }
     }
 
-    // 1. Save to PostgreSQL database
     const bookingId = await saveBooking(body);
-
-    // 2. Send email + WhatsApp in parallel (non-blocking — failures won't break the response)
-    await Promise.allSettled([
-      sendEmail(body, bookingId),
-      sendWhatsApp(body, bookingId),
-    ]);
+    await sendEmail(body, bookingId);
 
     return Response.json({ success: true, bookingId });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[Booking API] Unhandled error:", err);
-    return Response.json(
-      { success: false, error: `Booking failed: ${message}` },
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ success: false, error: `Booking failed: ${message}` }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
