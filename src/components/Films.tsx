@@ -3,8 +3,8 @@
 import { Youtube } from "lucide-react";
 
 const CHANNEL_URL = "https://youtube.com/@satishphotography1?si=VBNNz3l9vojAe6bM";
-// The uploads playlist for channel UC2lmu2kx9zr1saALdxgtDMg is UU2lmu2kx9zr1saALdxgtDMg
-const CHANNEL_EMBED_URL = "https://www.youtube.com/embed/videoseries?list=UU2lmu2kx9zr1saALdxgtDMg";
+// Embed a specific video as requested by the user
+const CHANNEL_EMBED_URL = "https://www.youtube.com/embed/Jw_K7iEEvos?si=fWAx9s31osff1hEP";
 
 export default function Films() {
   return (
@@ -32,7 +32,9 @@ export default function Films() {
               src={CHANNEL_EMBED_URL}
               title="Satish Photography YouTube Channel"
               className="w-full h-full border-0 absolute inset-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              frameBorder="0"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               loading="lazy"
             />
