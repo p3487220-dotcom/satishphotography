@@ -2,7 +2,7 @@
 
 import { Youtube } from "lucide-react";
 
-const CHANNEL_URL = "https://youtube.com/@satishphotography1?si=VBNNz3l9vojAe6bM";
+const CHANNEL_URL = "https://youtube.com/@satishphotography1?si=ny0tGouhipROLynC";
 // Embed a specific video as requested by the user
 const CHANNEL_EMBED_URL = "https://www.youtube.com/embed/Jw_K7iEEvos?si=fWAx9s31osff1hEP";
 
