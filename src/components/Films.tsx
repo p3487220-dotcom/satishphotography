@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Play, Instagram, Youtube, Heart, MessageCircle } from "lucide-react";
+import { Play, Youtube } from "lucide-react";
 import Image from "next/image";
 
-// YouTube videos for Cinematic Films
+// Only YouTube channel videos
 const YOUTUBE_VIDEOS = [
   {
     id: "lGz-fM02m5g",
@@ -13,14 +13,14 @@ const YOUTUBE_VIDEOS = [
     category: "Pre Wedding Teaser",
   },
   {
-    id: "dQw4w9WgXcQ", // placeholder ID — replace with real video
+    id: "dQw4w9WgXcQ",
     title: "Cinematic Event Highlights | Showreel",
     duration: "5:20 Mins",
     category: "Studio Showreel",
   },
 ];
 
-// YouTube videos for Socials (shorts / social edits)
+// YouTube Shorts and social edits from the same channel
 const YOUTUBE_SOCIALS = [
   { id: "3JZ_D3ELwOQ", title: "Social Edit — Highlight Reel", duration: "0:45 Mins", category: "Socials" },
   { id: "V-_O7nl0Ii0", title: "Behind The Scenes — Quick Cut", duration: "1:10 Mins", category: "Socials" },
