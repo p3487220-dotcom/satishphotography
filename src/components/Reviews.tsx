@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Star, Quote } from "lucide-react";
+import { parseApiJson } from "@/lib/api";
 
 interface Review {
   id: number;
@@ -12,7 +13,7 @@ interface Review {
   location: string;
 }
 
-const REVIEWS: Review[] = [
+const DEFAULT_REVIEWS: Review[] = [
   {
     id: 1,
     name: "Raviteja K.",
@@ -41,7 +42,7 @@ const REVIEWS: Review[] = [
     id: 4,
     name: "Anusha R.",
     role: "Bride",
-    text: "Our pre-wedding outdoor session felt like a Bollywood video. Satish selected the perfect locations and timings to catch the sunrise. highly recommend!",
+    text: "Our pre-wedding outdoor session felt like a Bollywood video. Satish selected the perfect locations and timings to catch the sunrise. Highly recommend!",
     rating: 5,
     location: "Hyderabad"
   },
@@ -57,23 +58,102 @@ const REVIEWS: Review[] = [
 
 export default function Reviews() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [submittedReviews, setSubmittedReviews] = useState<Review[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formState, setFormState] = useState({
+    name: "",
+    role: "Client",
+    location: "",
+    rating: 5,
+    text: ""
+  });
   const sliderRef = useRef<HTMLDivElement>(null);
+
+  const displayReviews = useMemo(
+    () => [...DEFAULT_REVIEWS, ...submittedReviews],
+    [submittedReviews]
+  );
+
+  useEffect(() => {
+    async function loadReviews() {
+      try {
+        const response = await fetch("/api/reviews", { cache: "no-store" });
+        const data = await parseApiJson<{ reviews?: Review[] }>(response);
+        if (response.ok && Array.isArray(data.reviews)) {
+          setSubmittedReviews(data.reviews);
+        }
+      } catch (error) {
+        console.warn("Failed to load submitted reviews:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadReviews();
+  }, []);
+
+  useEffect(() => {
+    setActiveIndex((prev) => (displayReviews.length ? prev % displayReviews.length : 0));
+  }, [displayReviews.length]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % REVIEWS.length);
+      setActiveIndex((prev) => (displayReviews.length ? (prev + 1) % displayReviews.length : 0));
     }, 4500);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [displayReviews.length]);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError(null);
+    setFeedbackMessage(null);
+
+    if (!formState.name.trim() || !formState.text.trim()) {
+      setFormError("Please enter your name and a short review message.");
+      return;
+    }
+
+    if (formState.rating < 1 || formState.rating > 5) {
+      setFormError("Please select a rating from 1 to 5.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formState)
+      });
+
+      const data = await parseApiJson<{ success?: boolean; review?: Review; error?: string }>(response);
+
+      if (!response.ok || !data.success || !data.review) {
+        setFormError(data.error || "Unable to submit your review. Please try again.");
+        return;
+      }
+
+      setSubmittedReviews((prev) => [data.review!, ...prev]);
+      setFeedbackMessage("Thank you! Your feedback is added to the review stream.");
+      setFormState({ name: "", role: "Client", location: "", rating: 5, text: "" });
+      setActiveIndex(0);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Unknown error occurred.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <section id="reviews" className="py-24 relative bg-primary overflow-hidden">
-      {/* Background glow */}
       <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-gold-radial opacity-10 pointer-events-none" />
 
       <div className="max-w-5xl mx-auto px-6 relative z-10">
-        {/* Header */}
         <div className="text-center mb-16">
           <span className="text-xs text-gold tracking-[0.3em] uppercase block mb-3 font-semibold">
             Client Appreciations
@@ -81,41 +161,34 @@ export default function Reviews() {
           <h2 className="text-3xl md:text-5xl font-serif font-light tracking-wide text-white">
             Words of Satisfaction
           </h2>
+          <p className="mt-4 text-sm text-white/60 max-w-2xl mx-auto">
+            Share your own customer feedback and let future clients see real appreciation from your experience.
+          </p>
           <div className="w-12 h-[1px] bg-gold mx-auto mt-6" />
         </div>
 
-        {/* Big Testimonial Display */}
         <div className="relative glass-panel p-8 md:p-16 border border-white/5 overflow-hidden min-h-[300px] flex flex-col justify-between">
-          {/* Quote mark backgrounds */}
           <Quote className="absolute right-8 top-8 w-24 h-24 text-white/5 pointer-events-none" />
           <Quote className="absolute left-8 bottom-8 w-24 h-24 text-white/5 pointer-events-none rotate-180" />
 
-          {/* Testimonial slides container */}
-          <div className="relative w-full overflow-hidden">
-            {REVIEWS.map((review, idx) => {
+          <div className="relative w-full overflow-hidden" ref={sliderRef}>
+            {displayReviews.map((review, idx) => {
               if (idx !== activeIndex) return null;
               return (
-                <div
-                  key={review.id}
-                  className="space-y-6 animate-fade-in"
-                >
-                  {/* Rating Stars */}
+                <div key={review.id} className="space-y-6 animate-fade-in">
                   <div className="flex items-center space-x-1 justify-center md:justify-start">
                     {Array.from({ length: review.rating }).map((_, i) => (
                       <Star key={i} className="w-4 h-4 fill-gold text-gold" />
                     ))}
                   </div>
 
-                  {/* Review Text */}
                   <p className="text-sm md:text-lg font-light leading-relaxed tracking-wide text-center md:text-left text-white/80 italic font-serif">
                     &ldquo;{review.text}&rdquo;
                   </p>
 
-                  {/* Client Info */}
                   <div className="flex items-center justify-center md:justify-start space-x-4 pt-4 border-t border-white/5">
-                    {/* Placeholder Avatar with luxury initials */}
                     <div className="w-10 h-10 rounded-full border border-gold/40 flex items-center justify-center bg-gold/10 text-gold text-xs font-bold font-mono">
-                      {review.name.split(" ").map(n => n[0]).join("")}
+                      {review.name.split(" ").map((n) => n[0]).join("")}
                     </div>
                     <div className="text-left">
                       <h4 className="text-sm text-white font-semibold tracking-wider font-sans">
@@ -131,9 +204,8 @@ export default function Reviews() {
             })}
           </div>
 
-          {/* Slide dots indicator */}
           <div className="flex justify-center space-x-2.5 mt-8 relative z-25">
-            {REVIEWS.map((_, idx) => (
+            {displayReviews.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveIndex(idx)}
@@ -143,6 +215,84 @@ export default function Reviews() {
               />
             ))}
           </div>
+        </div>
+
+        <div className="mt-12 glass-panel p-8 md:p-12 border border-white/5">
+          <div className="mb-8 text-center">
+            <h3 className="text-2xl text-white font-semibold">Add your own review</h3>
+            <p className="text-sm text-white/60 max-w-2xl mx-auto mt-2">
+              Permission granted to share client appreciation. Submit your feedback and it will appear in the guest review feed.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
+            <label className="flex flex-col text-white/70 text-sm">
+              Name
+              <input
+                value={formState.name}
+                onChange={(e) => setFormState((prev) => ({ ...prev, name: e.target.value }))}
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                placeholder="Your name"
+              />
+            </label>
+
+            <label className="flex flex-col text-white/70 text-sm">
+              Event Role
+              <input
+                value={formState.role}
+                onChange={(e) => setFormState((prev) => ({ ...prev, role: e.target.value }))}
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                placeholder="Bride, Groom, Parent, Client..."
+              />
+            </label>
+
+            <label className="flex flex-col text-white/70 text-sm">
+              Location
+              <input
+                value={formState.location}
+                onChange={(e) => setFormState((prev) => ({ ...prev, location: e.target.value }))}
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                placeholder="City or venue"
+              />
+            </label>
+
+            <label className="flex flex-col text-white/70 text-sm">
+              Rating
+              <select
+                value={formState.rating}
+                onChange={(e) => setFormState((prev) => ({ ...prev, rating: Number(e.target.value) }))}
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+              >
+                {[5, 4, 3, 2, 1].map((value) => (
+                  <option key={value} value={value}>{`${value} star${value > 1 ? "s" : ""}`}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="md:col-span-2 flex flex-col text-white/70 text-sm">
+              Your Appreciation
+              <textarea
+                value={formState.text}
+                onChange={(e) => setFormState((prev) => ({ ...prev, text: e.target.value }))}
+                rows={4}
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                placeholder="Describe your experience in a few sentences"
+              />
+            </label>
+
+            <div className="md:col-span-2 flex flex-col gap-3">
+              {formError ? <p className="text-sm text-rose-400">{formError}</p> : null}
+              {feedbackMessage ? <p className="text-sm text-emerald-300">{feedbackMessage}</p> : null}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center justify-center rounded-full bg-gold px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#050505] transition hover:bg-[#d8b357] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {submitting ? "Submitting..." : "Send Review"}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </section>

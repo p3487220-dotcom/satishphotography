@@ -35,6 +35,18 @@ class SqliteAdapter {
         created_at  TEXT    DEFAULT (datetime('now', 'localtime'))
       )
     `);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT    NOT NULL,
+        role        TEXT    NOT NULL DEFAULT 'Client',
+        text        TEXT    NOT NULL,
+        rating      INTEGER NOT NULL,
+        location    TEXT,
+        created_at  TEXT    DEFAULT (datetime('now', 'localtime'))
+      )
+    `);
   }
 
   async query(text: string, params: unknown[] = []): Promise<QueryResult> {
