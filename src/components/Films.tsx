@@ -3,7 +3,8 @@
 import { Youtube } from "lucide-react";
 
 const CHANNEL_URL = "https://youtube.com/@satishphotography1?si=VBNNz3l9vojAe6bM";
-const CHANNEL_EMBED_URL = "https://www.youtube.com/embed?listType=user_uploads&list=satishphotography1";
+// The uploads playlist for channel UC2lmu2kx9zr1saALdxgtDMg is UU2lmu2kx9zr1saALdxgtDMg
+const CHANNEL_EMBED_URL = "https://www.youtube.com/embed/videoseries?list=UU2lmu2kx9zr1saALdxgtDMg";
 
 export default function Films() {
   return (
