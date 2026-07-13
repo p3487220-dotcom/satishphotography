@@ -42,7 +42,7 @@ export default function Footer() {
         {/* Right: Social icons */}
         <div className="flex items-center space-x-5">
           <a
-            href="https://www.instagram.com/satishphotography1"
+            href="https://www.instagram.com/satish_photography1?igsh=eWxremQ1emQ2bzVp"
             target="_blank"
             rel="noopener noreferrer"
             className="text-white/40 hover:text-gold transition-colors duration-300"
