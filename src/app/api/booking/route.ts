@@ -1,159 +1,106 @@
-import { NextRequest } from "next/server";
-import nodemailer from "nodemailer";
-import db from "@/lib/db";
+// app/api/booking/route.ts
+import { NextResponse } from "next/server";
 
 interface BookingPayload {
   name: string;
   phone: string;
   package: string;
   date: string;
-  time: string;
-  location: string;
   guests: string;
-  requests: string;
+  location: string;
+  time: string;
+  requests?: string;
 }
 
-async function saveBooking(data: BookingPayload): Promise<number> {
-  const result = await db.query(
-    `
-      INSERT INTO bookings (name, phone, package, date, time, location, guests, requests)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING id
-    `,
-    [data.name, data.phone, data.package, data.date, data.time, data.location, data.guests, data.requests]
-  );
+// Fallbacks so the form still works even if env vars aren't set on the host.
+// Recommended: set OWNER_WHATSAPP_NUMBER and OWNER_EMAIL in your .env file instead
+// of relying on these hardcoded defaults.
+const OWNER_WHATSAPP_NUMBER = process.env.OWNER_WHATSAPP_NUMBER || "918008231832";
+const OWNER_EMAIL = process.env.OWNER_EMAIL || "erlasatish32@gmail.com";
 
-  const firstRow = result.rows[0] as { id?: number } | undefined;
-  return Number(firstRow?.id);
+function validate(data: Partial<BookingPayload>): string | null {
+  if (!data.name || data.name.trim().length < 2) return "Please enter a valid name.";
+  if (!data.phone || data.phone.replace(/\D/g, "").length < 10) return "Please enter a valid phone number.";
+  if (!data.date || isNaN(new Date(data.date).getTime())) return "Please select a valid event date.";
+  if (new Date(data.date) < new Date(new Date().toDateString())) return "Event date cannot be in the past.";
+  if (!data.location || data.location.trim().length < 2) return "Please enter a shoot location.";
+  if (data.requests && data.requests.length > 2000) return "Special requests are too long.";
+  return null;
 }
 
-async function sendEmail(data: BookingPayload, bookingId: number) {
-  const {
-    OWNER_EMAIL,
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASS,
-    SMTP_SECURE,
-    GMAIL_APP_PASSWORD,
-  } = process.env;
+// Escapes HTML-sensitive characters so user input can't break the email markup.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
-  const emailTo = OWNER_EMAIL || SMTP_USER || "";
-  const emailUser = SMTP_USER || OWNER_EMAIL || "";
-  const emailPass = SMTP_PASS || GMAIL_APP_PASSWORD || "";
-
-  if (!emailTo || !emailUser || !emailPass) {
-    console.warn("[Booking] Email env vars not set — skipping email notification.");
-    return;
-  }
-
+export async function POST(request: Request) {
   try {
-    const transporter = nodemailer.createTransport({
-      host: SMTP_HOST || "smtp.gmail.com",
-      port: Number(SMTP_PORT || 587),
-      secure: String(SMTP_SECURE || "false").toLowerCase() === "true",
-      auth: {
-        user: emailUser,
-        pass: emailPass,
-      },
-    });
+    const data = (await request.json()) as Partial<BookingPayload>;
 
-  const plaintext = [
-    `New booking received`,
-    `Booking ID: #${bookingId}`,
-    `Name: ${data.name}`,
-    `Phone: ${data.phone}`,
-    `Package: ${data.package}`,
-    `Date: ${data.date}`,
-    `Time: ${data.time}`,
-    `Location: ${data.location}`,
-    `Guests: ${data.guests || "Not specified"}`,
-    `Requests: ${data.requests || "None"}`,
-  ].join("\n");
-
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8" />
-      <style>
-        body { font-family: Georgia, serif; background: #0d0d0d; color: #e5e5e5; margin: 0; padding: 0; }
-        .wrapper { max-width: 580px; margin: 40px auto; background: #1a1a1a; border: 1px solid #c9a84c33; }
-        .header { background: linear-gradient(135deg, #1a1a1a, #111); padding: 36px 40px; border-bottom: 1px solid #c9a84c55; text-align: center; }
-        .header h1 { margin: 0; font-size: 22px; letter-spacing: 0.15em; color: #c9a84c; font-weight: 300; }
-        .header p { margin: 6px 0 0; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: #888; }
-        .badge { display: inline-block; background: #c9a84c; color: #0d0d0d; font-size: 10px; font-weight: bold; letter-spacing: 0.2em; padding: 4px 12px; margin-top: 14px; text-transform: uppercase; }
-        .body { padding: 36px 40px; }
-        .row { display: flex; margin-bottom: 18px; align-items: flex-start; border-bottom: 1px solid #ffffff08; padding-bottom: 16px; }
-        .row:last-child { border-bottom: none; }
-        .icon { font-size: 18px; width: 28px; flex-shrink: 0; }
-        .label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 4px; }
-        .value { font-size: 15px; color: #ffffff; font-weight: 400; }
-        .footer { padding: 20px 40px; background: #111; border-top: 1px solid #c9a84c22; text-align: center; font-size: 10px; color: #555; letter-spacing: 0.15em; }
-        .booking-id { color: #c9a84c; font-size: 12px; font-weight: bold; }
-      </style>
-    </head>
-    <body>
-      <div class="wrapper">
-        <div class="header">
-          <h1>✦ New Booking Received ✦</h1>
-          <p>Satish Photography — Reservation Portal</p>
-          <span class="badge">Booking #${bookingId}</span>
-        </div>
-        <div class="body">
-          <div class="row"><span class="icon">👤</span><div style="margin-left:12px"><div class="label">Client Name</div><div class="value">${data.name}</div></div></div>
-          <div class="row"><span class="icon">📞</span><div style="margin-left:12px"><div class="label">Phone / WhatsApp</div><div class="value">${data.phone}</div></div></div>
-          <div class="row"><span class="icon">📸</span><div style="margin-left:12px"><div class="label">Package Selected</div><div class="value">${data.package}</div></div></div>
-          <div class="row"><span class="icon">📅</span><div style="margin-left:12px"><div class="label">Event Date</div><div class="value">${data.date}</div></div></div>
-          <div class="row"><span class="icon">⏰</span><div style="margin-left:12px"><div class="label">Time Slot</div><div class="value">${data.time}</div></div></div>
-          <div class="row"><span class="icon">📍</span><div style="margin-left:12px"><div class="label">Location</div><div class="value">${data.location}</div></div></div>
-          <div class="row"><span class="icon">👥</span><div style="margin-left:12px"><div class="label">Estimated Guests</div><div class="value">${data.guests || "Not specified"}</div></div></div>
-          <div class="row"><span class="icon">✏️</span><div style="margin-left:12px"><div class="label">Special Requests</div><div class="value">${data.requests || "None"}</div></div></div>
-        </div>
-        <div class="footer">Sent automatically from Satish Photography Booking Portal<br/><span class="booking-id">Booking ID: #${bookingId}</span></div>
-      </div>
-    </body>
-    </html>
-  `;
-
-  await transporter.sendMail({
-    from: `"Satish Photography Booking" <${emailUser}>`,
-    to: emailTo,
-    subject: `📸 New Booking #${bookingId} — ${data.name} | ${data.package}`,
-    text: plaintext,
-    html,
-  });
-  } catch (emailError) {
-    console.warn("[Booking] Failed to send email:", emailError instanceof Error ? emailError.message : emailError);
-    // Don't throw — email failures shouldn't block bookings
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body: BookingPayload = await request.json();
-
-    const required: (keyof BookingPayload)[] = ["name", "phone", "package", "date", "time", "location"];
-    for (const field of required) {
-      if (!body[field]?.trim()) {
-        return Response.json({ success: false, error: `Missing required field: ${field}` }, { status: 400 });
-      }
+    const validationError = validate(data);
+    if (validationError) {
+      return NextResponse.json({ success: false, error: validationError }, { status: 400 });
     }
 
-    const bookingId = await saveBooking(body);
-    
-    // Send email asynchronously without blocking the response
-    sendEmail(body, bookingId).catch((err) => {
-      console.warn("[Booking] Email notification failed:", err instanceof Error ? err.message : err);
-    });
+    // waNumber should be digits only, no + or spaces (e.g. "918008231832")
+    const waNumber = OWNER_WHATSAPP_NUMBER.replace(/\D/g, "");
+    const waText = encodeURIComponent(
+      `New booking:\nName: ${data.name}\nPhone: ${data.phone}\nPackage: ${data.package}\nDate: ${data.date}\nLocation: ${data.location}`
+    );
+    const whatsappLink = waNumber ? `https://wa.me/${waNumber}?text=${waText}` : null;
 
-    return Response.json({ success: true, bookingId });
+    // Email sending is best-effort: if this fails (bad key, Resend outage,
+    // network error), the booking itself should still succeed for the user.
+    if (process.env.RESEND_API_KEY && OWNER_EMAIL) {
+      try {
+        const emailRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Satish Photography <onboarding@resend.dev>",
+            to: OWNER_EMAIL,
+            subject: `New Booking: ${data.name} — ${data.date}`,
+            html: `<h2>New Booking Request</h2>
+              <p><b>Name:</b> ${escapeHtml(data.name!)}</p>
+              <p><b>Phone:</b> ${escapeHtml(data.phone!)}</p>
+              <p><b>Package:</b> ${escapeHtml(data.package || "—")}</p>
+              <p><b>Date:</b> ${escapeHtml(data.date!)} — ${escapeHtml(data.time || "—")}</p>
+              <p><b>Location:</b> ${escapeHtml(data.location!)}</p>
+              <p><b>Guests:</b> ${escapeHtml(data.guests || "—")}</p>
+              <p><b>Requests:</b> ${escapeHtml(data.requests || "—")}</p>`,
+          }),
+        });
+        if (!emailRes.ok) {
+          console.error("Resend error:", emailRes.status, await emailRes.text());
+        }
+      } catch (emailErr) {
+        console.error("Resend request failed (network/timeout):", emailErr);
+      }
+    } else {
+      console.warn("Email skipped: RESEND_API_KEY or OWNER_EMAIL not set.");
+    }
+
+    return NextResponse.json({ success: true, whatsappLink });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Booking API] Unhandled error:", err);
-    return new Response(JSON.stringify({ success: false, error: `Booking failed: ${message}` }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    const message = err instanceof Error ? err.stack || err.message : String(err);
+    // Log full detail server-side so the real cause is visible in your logs/host dashboard.
+    console.error("Booking route error:", message);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Something went wrong processing your booking. Please try again.",
+        // TEMPORARY DEBUG FIELD — remove this line once the issue is found.
+        debug: message,
+      },
+      { status: 500 }
+    );
   }
 }
