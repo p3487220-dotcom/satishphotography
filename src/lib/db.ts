@@ -49,16 +49,28 @@ class SqliteAdapter {
     `);
   }
 
+  private convertPostgresToSqlite(text: string): string {
+    // Convert PostgreSQL $1, $2, ... placeholders to SQLite ? placeholders
+    let result = text;
+    let placeholder = 1;
+    while (result.includes(`$${placeholder}`)) {
+      result = result.replace(`$${placeholder}`, "?");
+      placeholder++;
+    }
+    return result;
+  }
+
   async query(text: string, params: unknown[] = []): Promise<QueryResult> {
     const normalized = text.trim().replace(/\s+/g, " ").toUpperCase();
+    const sqliteText = this.convertPostgresToSqlite(text);
 
     if (normalized.startsWith("SELECT")) {
-      const stmt = this.db.prepare(text);
+      const stmt = this.db.prepare(sqliteText);
       return { rows: stmt.all(...params) as unknown[] };
     }
 
     if (normalized.startsWith("INSERT")) {
-      const insertSql = text.replace(/\s+RETURNING\s+id\s*$/i, "");
+      const insertSql = sqliteText.replace(/\s+RETURNING\s+id\s*$/i, "");
       const stmt = this.db.prepare(insertSql);
       const info = stmt.run(...params);
 
@@ -73,13 +85,13 @@ class SqliteAdapter {
     }
 
     if (normalized.startsWith("DELETE")) {
-      const stmt = this.db.prepare(text);
+      const stmt = this.db.prepare(sqliteText);
       const info = stmt.run(...params);
       return { rows: [], rowCount: info.changes };
     }
 
     if (normalized.startsWith("UPDATE")) {
-      const stmt = this.db.prepare(text);
+      const stmt = this.db.prepare(sqliteText);
       const info = stmt.run(...params);
       return { rows: [], rowCount: info.changes };
     }

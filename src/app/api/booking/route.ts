@@ -47,15 +47,16 @@ async function sendEmail(data: BookingPayload, bookingId: number) {
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST || "smtp.gmail.com",
-    port: Number(SMTP_PORT || 587),
-    secure: String(SMTP_SECURE || "false").toLowerCase() === "true",
-    auth: {
-      user: emailUser,
-      pass: emailPass,
-    },
-  });
+  try {
+    const transporter = nodemailer.createTransport({
+      host: SMTP_HOST || "smtp.gmail.com",
+      port: Number(SMTP_PORT || 587),
+      secure: String(SMTP_SECURE || "false").toLowerCase() === "true",
+      auth: {
+        user: emailUser,
+        pass: emailPass,
+      },
+    });
 
   const plaintext = [
     `New booking received`,
@@ -122,6 +123,10 @@ async function sendEmail(data: BookingPayload, bookingId: number) {
     text: plaintext,
     html,
   });
+  } catch (emailError) {
+    console.warn("[Booking] Failed to send email:", emailError instanceof Error ? emailError.message : emailError);
+    // Don't throw — email failures shouldn't block bookings
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -136,7 +141,11 @@ export async function POST(request: NextRequest) {
     }
 
     const bookingId = await saveBooking(body);
-    await sendEmail(body, bookingId);
+    
+    // Send email asynchronously without blocking the response
+    sendEmail(body, bookingId).catch((err) => {
+      console.warn("[Booking] Email notification failed:", err instanceof Error ? err.message : err);
+    });
 
     return Response.json({ success: true, bookingId });
   } catch (err) {
