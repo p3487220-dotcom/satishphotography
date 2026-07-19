@@ -14,6 +14,7 @@ const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || "";
 const EMAILJS_TEMPLATE_ID = process.env.EMAILJS_TEMPLATE_ID || "";
 const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || "";
 const EMAILJS_PRIVATE_KEY = process.env.EMAILJS_PRIVATE_KEY || "";
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 export interface BookingInput {
   name: string;
@@ -69,17 +70,21 @@ export async function POST(request: Request) {
       created_at: new Date().toISOString(),
     };
 
-    // Insert into Supabase using anon key (RLS: INSERT allowed for anon)
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    // Insert into Supabase using service role key if available, else anon key (RLS bypassed for service role)
+    if (!SUPABASE_URL || (!SUPABASE_SERVICE_ROLE_KEY && !SUPABASE_ANON_KEY)) {
       return NextResponse.json(
         { success: false, error: "Database not configured." },
         { status: 500 }
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
+    const supabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY,
+      {
+        auth: { autoRefreshToken: false, persistSession: false },
+      }
+    );
 
     const { data: inserted, error: dbError } = await supabase
       .from("bookings")
@@ -90,7 +95,11 @@ export async function POST(request: Request) {
     if (dbError) {
       console.error("[Booking] Supabase insert error:", dbError);
       return NextResponse.json(
-        { success: false, error: "Failed to save booking. Please try again later." },
+        { 
+          success: false, 
+          error: "Failed to save booking. Please try again later.",
+          details: dbError // Return actual Supabase error for debugging
+        },
         { status: 500 }
       );
     }
