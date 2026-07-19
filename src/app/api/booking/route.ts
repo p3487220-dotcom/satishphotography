@@ -1,105 +1,137 @@
-// app/api/booking/route.ts
+// src/app/api/booking/route.ts
+// Public booking endpoint — inserts via anon key (RLS allows INSERT for anon)
+// Sends notification via EmailJS after successful insert
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import EmailJS from "@emailjs/nodejs";
 
-interface BookingPayload {
+const SUPABASE_URL =
+  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || "";
+const EMAILJS_TEMPLATE_ID = process.env.EMAILJS_TEMPLATE_ID || "";
+const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || "";
+const EMAILJS_PRIVATE_KEY = process.env.EMAILJS_PRIVATE_KEY || "";
+
+export interface BookingInput {
   name: string;
+  email: string;
   phone: string;
-  package: string;
-  date: string;
-  guests: string;
+  event_type: string;
+  event_date: string;
+  event_time: string;
   location: string;
-  time: string;
-  requests?: string;
+  message?: string;
 }
 
-// Fallbacks so the form still works even if env vars aren't set on the host.
-// Recommended: set OWNER_WHATSAPP_NUMBER and OWNER_EMAIL in your .env file instead
-// of relying on these hardcoded defaults.
-const OWNER_WHATSAPP_NUMBER = process.env.OWNER_WHATSAPP_NUMBER || "918008231832";
-const OWNER_EMAIL = process.env.OWNER_EMAIL || "erlasatish32@gmail.com";
-
-function validate(data: Partial<BookingPayload>): string | null {
+function validate(data: Partial<BookingInput>): string | null {
   if (!data.name || data.name.trim().length < 2) return "Please enter a valid name.";
-  if (!data.phone || data.phone.replace(/\D/g, "").length < 10) return "Please enter a valid phone number.";
-  if (!data.date || isNaN(new Date(data.date).getTime())) return "Please select a valid event date.";
-  if (new Date(data.date) < new Date(new Date().toDateString())) return "Event date cannot be in the past.";
-  if (!data.location || data.location.trim().length < 2) return "Please enter a shoot location.";
-  if (data.requests && data.requests.length > 2000) return "Special requests are too long.";
+  if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
+    return "Please enter a valid email address.";
+  if (!data.phone || data.phone.replace(/\D/g, "").length < 10)
+    return "Please enter a valid phone number (at least 10 digits).";
+  if (!data.event_type) return "Please select an event type.";
+  if (!data.event_date || isNaN(new Date(data.event_date).getTime()))
+    return "Please select a valid event date.";
+  if (new Date(data.event_date) < new Date(new Date().toDateString()))
+    return "Event date cannot be in the past.";
+  if (!data.event_time) return "Please select a preferred time.";
+  if (!data.location || data.location.trim().length < 2)
+    return "Please enter a shoot location.";
+  if (data.message && data.message.length > 2000)
+    return "Message is too long (max 2000 characters).";
   return null;
-}
-
-// Escapes HTML-sensitive characters so user input can't break the email markup.
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 export async function POST(request: Request) {
   try {
-    const data = (await request.json()) as Partial<BookingPayload>;
+    const body = (await request.json()) as Partial<BookingInput>;
 
-    const validationError = validate(data);
+    // Validate
+    const validationError = validate(body);
     if (validationError) {
       return NextResponse.json({ success: false, error: validationError }, { status: 400 });
     }
 
-    // waNumber should be digits only, no + or spaces (e.g. "918008231832")
-    const waNumber = OWNER_WHATSAPP_NUMBER.replace(/\D/g, "");
-    const waText = encodeURIComponent(
-      `New booking:\nName: ${data.name}\nPhone: ${data.phone}\nPackage: ${data.package}\nDate: ${data.date}\nLocation: ${data.location}`
-    );
-    const whatsappLink = waNumber ? `https://wa.me/${waNumber}?text=${waText}` : null;
+    // Build the record
+    const record = {
+      name: body.name!.trim(),
+      email: body.email!.trim().toLowerCase(),
+      phone: body.phone!.trim(),
+      event_type: body.event_type!,
+      event_date: body.event_date!,
+      event_time: body.event_time!,
+      location: body.location!.trim(),
+      message: body.message?.trim() || "",
+      status: "pending",
+      created_at: new Date().toISOString(),
+    };
 
-    // Email sending is best-effort: if this fails (bad key, Resend outage,
-    // network error), the booking itself should still succeed for the user.
-    if (process.env.RESEND_API_KEY && OWNER_EMAIL) {
-      try {
-        const emailRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: "Satish Photography <onboarding@resend.dev>",
-            to: OWNER_EMAIL,
-            subject: `New Booking: ${data.name} — ${data.date}`,
-            html: `<h2>New Booking Request</h2>
-              <p><b>Name:</b> ${escapeHtml(data.name!)}</p>
-              <p><b>Phone:</b> ${escapeHtml(data.phone!)}</p>
-              <p><b>Package:</b> ${escapeHtml(data.package || "—")}</p>
-              <p><b>Date:</b> ${escapeHtml(data.date!)} — ${escapeHtml(data.time || "—")}</p>
-              <p><b>Location:</b> ${escapeHtml(data.location!)}</p>
-              <p><b>Guests:</b> ${escapeHtml(data.guests || "—")}</p>
-              <p><b>Requests:</b> ${escapeHtml(data.requests || "—")}</p>`,
-          }),
-        });
-        if (!emailRes.ok) {
-          console.error("Resend error:", emailRes.status, await emailRes.text());
-        }
-      } catch (emailErr) {
-        console.error("Resend request failed (network/timeout):", emailErr);
-      }
-    } else {
-      console.warn("Email skipped: RESEND_API_KEY or OWNER_EMAIL not set.");
+    // Insert into Supabase using anon key (RLS: INSERT allowed for anon)
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      return NextResponse.json(
+        { success: false, error: "Database not configured." },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ success: true, whatsappLink });
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const { data: inserted, error: dbError } = await supabase
+      .from("bookings")
+      .insert([record])
+      .select("id")
+      .single();
+
+    if (dbError) {
+      console.error("[Booking] Supabase insert error:", dbError);
+      return NextResponse.json(
+        { success: false, error: "Failed to save booking. Please try again later." },
+        { status: 500 }
+      );
+    }
+
+    // Send EmailJS notification (best-effort)
+    if (EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY) {
+      try {
+        EmailJS.init({ publicKey: EMAILJS_PUBLIC_KEY, privateKey: EMAILJS_PRIVATE_KEY || undefined });
+
+        await EmailJS.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID,
+          {
+            to_name: "Satish",
+            from_name: record.name,
+            from_email: record.email,
+            from_phone: record.phone,
+            event_type: record.event_type,
+            event_date: record.event_date,
+            event_time: record.event_time,
+            location: record.location,
+            message: record.message,
+            booking_id: inserted?.id ?? "N/A",
+            status: record.status,
+          },
+          { publicKey: EMAILJS_PUBLIC_KEY }
+        );
+      } catch (emailErr) {
+        // Don't fail the booking if EmailJS fails
+        console.error("[Booking] EmailJS notification failed:", emailErr);
+      }
+    } else {
+      console.warn("[Booking] EmailJS not configured — skipping notification.");
+    }
+
+    return NextResponse.json({ success: true, id: inserted?.id });
   } catch (err) {
-    const message = err instanceof Error ? err.stack || err.message : String(err);
-    // Log full detail server-side so the real cause is visible in your logs/host dashboard.
-    console.error("Booking route error:", message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[Booking] Unexpected error:", message);
     return NextResponse.json(
-      {
-        success: false,
-        error: "Something went wrong processing your booking. Please try again.",
-        // TEMPORARY DEBUG FIELD — remove this line once the issue is found.
-        debug: message,
-      },
+      { success: false, error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }

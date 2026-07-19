@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion } from "framer-motion";
 import { parseApiJson } from "@/lib/api";
-import { Calendar, User, MapPin, Clock, Award, CheckCircle } from "lucide-react";
+import { Calendar, User, MapPin, Clock, Award, CheckCircle, Mail } from "lucide-react";
 
-const PACKAGES = [
+const EVENT_TYPES = [
   { value: "Wedding Photography", label: "Wedding Photography (Fine Art)" },
   { value: "Wedding Cinematography", label: "Wedding Cinematography (4K)" },
   { value: "Wedding Photography & Videography", label: "Wedding Photography & Videography (Combo)" },
@@ -23,23 +23,24 @@ const PACKAGES = [
 export default function Booking() {
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     phone: "",
-    package: "Wedding Photography",
-    date: "",
-    guests: "Under 100",
+    event_type: "Wedding Photography",
+    event_date: "",
+    event_time: "Morning (06:00 AM)",
     location: "",
-    time: "Morning (06:00 AM)",
-    requests: ""
+    message: ""
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState<string | null>(null);
+  const submitLockRef = useRef(false);
 
   // Calculate form completion progress for the animated bar
   const calculateProgress = () => {
-    let fields = ["name", "phone", "date", "location"];
-    let filled = fields.filter((f) => formData[f as keyof typeof formData] !== "").length;
+    const fields = ["name", "email", "phone", "event_date", "location"] as const;
+    const filled = fields.filter((f) => formData[f] !== "").length;
     return (filled / fields.length) * 100;
   };
 
@@ -50,13 +51,32 @@ export default function Booking() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone || !formData.date || !formData.location) {
-      alert("Please fill in all the required fields (*)");
+
+    // Prevent double submit
+    if (submitLockRef.current || isSubmitting) return;
+
+    const { name, email, phone, event_date, location } = formData;
+
+    if (!name || !email || !phone || !event_date || !location) {
+      setIsError("Please fill in all required fields (*).");
+      return;
+    }
+
+    // Basic email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setIsError("Please enter a valid email address.");
+      return;
+    }
+
+    // Phone validation (at least 10 digits)
+    if (phone.replace(/\D/g, "").length < 10) {
+      setIsError("Please enter a valid phone number (at least 10 digits).");
       return;
     }
 
     setIsSubmitting(true);
     setIsError(null);
+    submitLockRef.current = true;
 
     try {
       const res = await fetch("/api/booking", {
@@ -77,6 +97,7 @@ export default function Booking() {
       setIsError(message);
     } finally {
       setIsSubmitting(false);
+      submitLockRef.current = false;
     }
   };
 
@@ -95,7 +116,7 @@ export default function Booking() {
             Book Your Session
           </h2>
           <p className="text-xs text-white/50 tracking-wider max-w-md mx-auto mt-4 leading-relaxed font-light">
-            Secure your date for an premium luxury photoshoot experience. Tailored layouts, cinema lens aesthetics, and elegant visual capture.
+            Secure your date for a premium luxury photoshoot experience. Tailored layouts, cinema lens aesthetics, and elegant visual capture.
           </p>
           <div className="w-12 h-[1px] bg-gold mx-auto mt-6" />
         </div>
@@ -112,7 +133,10 @@ export default function Booking() {
           </div>
 
           {isSuccess ? (
-            <div
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
               className="text-center py-12 flex flex-col items-center"
             >
               <CheckCircle className="w-16 h-16 text-gold mb-6 animate-bounce" />
@@ -120,7 +144,7 @@ export default function Booking() {
                 Reservation Confirmed
               </h3>
               <p className="text-xs text-white/50 max-w-sm mt-3 tracking-wider leading-relaxed">
-                Your booking has been saved and Satish has been notified via email and WhatsApp. He will confirm your availability shortly.
+                Your booking has been saved and Satish has been notified. He will confirm your availability shortly.
               </p>
               <button
                 onClick={() => {
@@ -128,23 +152,23 @@ export default function Booking() {
                   setIsError(null);
                   setFormData({
                     name: "",
+                    email: "",
                     phone: "",
-                    package: "Wedding Photography",
-                    date: "",
-                    guests: "Under 100",
+                    event_type: "Wedding Photography",
+                    event_date: "",
+                    event_time: "Morning (06:00 AM)",
                     location: "",
-                    time: "Morning (06:00 AM)",
-                    requests: ""
+                    message: ""
                   });
                 }}
                 className="mt-8 px-6 py-2.5 bg-gold text-primary hover:bg-gold-light font-bold text-xs tracking-widest uppercase transition-colors"
               >
                 Book Another Event
               </button>
-            </div>
+            </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Dual inputs: Name & Phone */}
+            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+              {/* Dual inputs: Name & Email */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-medium">
@@ -166,36 +190,55 @@ export default function Booking() {
 
                 <div>
                   <label className="block text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-medium">
-                    Phone & WhatsApp *
+                    Email Address *
                   </label>
                   <div className="relative">
                     <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
+                      type="email"
+                      name="email"
+                      value={formData.email}
                       onChange={handleInputChange}
                       required
-                      placeholder="e.g. +91 99999 99999"
+                      placeholder="e.g. you@example.com"
                       className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
                     />
-                    <User className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
+                    <Mail className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
                   </div>
                 </div>
               </div>
 
-              {/* Package Selector */}
+              {/* Phone */}
               <div>
                 <label className="block text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-medium">
-                  Select Luxury Package *
+                  Phone & WhatsApp *
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="e.g. +91 99999 99999"
+                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
+                  />
+                  <User className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
+                </div>
+              </div>
+
+              {/* Event Type Selector */}
+              <div>
+                <label className="block text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-medium">
+                  Select Event Type *
                 </label>
                 <div className="relative">
                   <select
-                    name="package"
-                    value={formData.package}
+                    name="event_type"
+                    value={formData.event_type}
                     onChange={handleInputChange}
                     className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors appearance-none cursor-pointer pl-10 pr-10"
                   >
-                    {PACKAGES.map((pkg) => (
+                    {EVENT_TYPES.map((pkg) => (
                       <option key={pkg.value} value={pkg.value} className="bg-[#111] text-white">
                         {pkg.label}
                       </option>
@@ -215,8 +258,8 @@ export default function Booking() {
                   <div className="relative">
                     <input
                       type="date"
-                      name="date"
-                      value={formData.date}
+                      name="event_date"
+                      value={formData.event_date}
                       onChange={handleInputChange}
                       required
                       className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors pl-10 dark:[color-scheme:dark]"
@@ -231,8 +274,8 @@ export default function Booking() {
                   </label>
                   <div className="relative">
                     <select
-                      name="time"
-                      value={formData.time}
+                      name="event_time"
+                      value={formData.event_time}
                       onChange={handleInputChange}
                       className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors appearance-none cursor-pointer pl-10 pr-10"
                     >
@@ -248,56 +291,33 @@ export default function Booking() {
                 </div>
               </div>
 
-              {/* Location & Guest count Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-medium">
-                    Preferred Shoot Location *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="e.g. Piduguralla, Andhra Pradesh"
-                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
-                    />
-                    <MapPin className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-medium">
-                    Estimated Guests
-                  </label>
-                  <div className="relative">
-                    <select
-                      name="guests"
-                      value={formData.guests}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors appearance-none cursor-pointer pl-10 pr-10"
-                    >
-                      <option className="bg-[#111]" value="Under 100">Portrait Only (Under 100 guests)</option>
-                      <option className="bg-[#111]" value="100 - 300">Intimate Gathering (100 - 300 guests)</option>
-                      <option className="bg-[#111]" value="300 - 600">Grand Celebration (300 - 600 guests)</option>
-                      <option className="bg-[#111]" value="600+">Royal Scale (600+ guests)</option>
-                    </select>
-                    <User className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
-                    <div className="absolute right-4 top-4.5 w-0 h-0 border-l-[4px] border-r-[4px] border-t-[4px] border-transparent border-t-white/40 pointer-events-none" />
-                  </div>
+              {/* Location */}
+              <div>
+                <label className="block text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-medium">
+                  Preferred Shoot Location *
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="e.g. Piduguralla, Andhra Pradesh"
+                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
+                  />
+                  <MapPin className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
                 </div>
               </div>
 
-              {/* Special Requests */}
+              {/* Message */}
               <div>
                 <label className="block text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2 font-medium">
                   Special Requests / Creative Visions
                 </label>
                 <textarea
-                  name="requests"
-                  value={formData.requests}
+                  name="message"
+                  value={formData.message}
                   onChange={handleInputChange}
                   rows={4}
                   placeholder="Tell us about your event theme, specific shots desired, or visual style requirements..."
@@ -307,9 +327,13 @@ export default function Booking() {
 
               {/* Error message */}
               {isError && (
-                <div className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-400 tracking-wide">
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-400 tracking-wide"
+                >
                   ⚠ {isError}
-                </div>
+                </motion.div>
               )}
 
               {/* Submit CTA */}
