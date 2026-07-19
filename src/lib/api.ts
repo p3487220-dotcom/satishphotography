@@ -1,16 +1,29 @@
-// app/api/booking/route.ts
-import { NextResponse } from "next/server";
+// src/lib/api.ts
+// Frontend helpers for parsing API responses safely.
 
-export async function POST(request: Request) {
+export async function parseApiJson<T = unknown>(res: Response): Promise<T> {
+  // If server returned HTML (e.g., Next.js error page), avoid res.json() crash.
+  const contentType = res.headers.get("content-type") || "";
+
+  // Read body as text first (works for both JSON and HTML).
+  const text = await res.text();
+
+  if (!contentType.toLowerCase().includes("application/json")) {
+    // Try to surface useful message from HTML.
+    // Keep it short so it doesn't flood UI.
+    const trimmed = text.trim().slice(0, 500);
+    throw new Error(
+      `Request failed with ${res.status} ${res.statusText}. Response was not JSON. Preview: ${trimmed}`
+    );
+  }
+
   try {
-    const data = await request.json();
-    // ...your existing logic here (email/WhatsApp/DB save)
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error("Booking route error:", err);
-    return NextResponse.json(
-      { success: false, error: "Something went wrong processing your booking." },
-      { status: 500 }
+    return JSON.parse(text) as T;
+  } catch (e) {
+    const trimmed = text.trim().slice(0, 500);
+    throw new Error(
+      `Request failed with ${res.status} ${res.statusText}. Invalid JSON. Preview: ${trimmed}`
     );
   }
 }
+
