@@ -74,6 +74,7 @@ export default function About() {
                 height={1000}
                 className="w-full h-auto object-cover transform hover:scale-103 transition-transform duration-700"
                 loading="lazy"
+                sizes="(max-width: 1024px) 100vw, 50vw"
               />
             </div>
             
@@ -144,9 +145,9 @@ export default function About() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {TIMELINE.map((item) => (
-              <div key={item.year} className="relative group pl-6 md:pl-0 border-l border-white/10 md:border-l-0 md:border-t md:pt-8 pt-0">
+              <div key={item.year} className="relative group pl-8 md:pl-0 border-l border-white/10 md:border-l-0 md:border-t md:pt-8 pt-1 pb-8 md:pb-0">
                 {/* Node circle */}
-                <div className="absolute -left-[6px] top-0 md:left-0 md:-top-[6px] w-[11px] h-[11px] rounded-full bg-gold border border-primary group-hover:scale-125 transition-transform" />
+                <div className="absolute -left-[6px] top-2 md:left-0 md:-top-[6px] w-[11px] h-[11px] rounded-full bg-gold border border-primary group-hover:scale-125 transition-transform" />
                 
                 {/* Year tag */}
                 <span className="text-sm font-mono font-bold text-gold">

@@ -153,7 +153,7 @@ export default function Portfolio() {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-4 py-2 text-[10px] tracking-[0.2em] uppercase transition-all duration-300 border ${
+              className={`px-4 min-h-[44px] flex items-center justify-center text-[10px] tracking-[0.2em] uppercase transition-all duration-300 border ${
                 activeFilter === filter
                   ? "border-gold bg-gold text-primary font-bold"
                   : "border-white/5 hover:border-gold/30 text-white/60 hover:text-white bg-[#111]/40"
@@ -194,6 +194,7 @@ export default function Portfolio() {
                     height={item.aspect === "portrait" ? 1120 : 800}
                     className="w-full h-auto object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
                     loading="lazy"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                   {/* Subtle vignette layer */}
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent opacity-40 group-hover:opacity-70 transition-opacity duration-500 z-10" />
@@ -236,7 +237,7 @@ export default function Portfolio() {
             {/* Close button */}
             <button
               onClick={closeLightbox}
-              className="absolute top-6 right-6 text-white/60 hover:text-white p-2 z-50 transition-colors"
+              className="absolute top-6 right-6 text-white/60 hover:text-white p-3 min-h-[48px] min-w-[48px] flex items-center justify-center z-50 transition-colors"
             >
               <X className="w-8 h-8" />
             </button>
@@ -244,13 +245,13 @@ export default function Portfolio() {
             {/* Navigation controls */}
             <button
               onClick={() => navigateLightbox("prev")}
-              className="absolute left-6 text-white/40 hover:text-white p-3 z-50 transition-colors bg-white/5 rounded-full"
+              className="absolute left-4 md:left-6 text-white/40 hover:text-white p-3 min-h-[48px] min-w-[48px] flex items-center justify-center z-50 transition-colors bg-white/5 rounded-full"
             >
               <ChevronLeft className="w-8 h-8" />
             </button>
             <button
               onClick={() => navigateLightbox("next")}
-              className="absolute right-6 text-white/40 hover:text-white p-3 z-50 transition-colors bg-white/5 rounded-full"
+              className="absolute right-4 md:right-6 text-white/40 hover:text-white p-3 min-h-[48px] min-w-[48px] flex items-center justify-center z-50 transition-colors bg-white/5 rounded-full"
             >
               <ChevronRight className="w-8 h-8" />
             </button>
@@ -273,6 +274,7 @@ export default function Portfolio() {
                   width={PORTFOLIO_ITEMS[lightboxIndex].aspect === "portrait" ? 900 : 1600}
                   height={PORTFOLIO_ITEMS[lightboxIndex].aspect === "portrait" ? 1200 : 900}
                   className="max-h-[65vh] md:max-h-[75vh] w-auto object-contain"
+                  sizes="(max-width: 768px) 100vw, 100vw"
                 />
               </motion.div>
 

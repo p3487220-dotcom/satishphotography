@@ -100,7 +100,7 @@ export default function Home() {
                 </motion.span>
 
                 {/* Main Heading Row 1: Letter Reveal */}
-                <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif font-extralight tracking-widest text-white mb-2 leading-none uppercase select-none">
+                <h1 className="text-3xl sm:text-6xl md:text-8xl font-serif font-extralight tracking-widest text-white mb-2 leading-tight md:leading-none uppercase select-none break-words max-w-[95vw]">
                   {title1.split("").map((char, index) => (
                     <motion.span
                       key={index}
@@ -149,7 +149,7 @@ export default function Home() {
                   {/* Book Session Button with Glow border */}
                   <button
                     onClick={() => handleScrollTo("#booking")}
-                    className="relative w-full sm:w-auto px-8 py-3.5 bg-gold text-primary font-bold text-xs tracking-[0.2em] uppercase hover:bg-gold-light transition-all duration-300 flex items-center justify-center space-x-2 group shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)]"
+                    className="relative w-full sm:w-auto min-h-[44px] px-8 py-3.5 bg-gold text-primary font-bold text-xs tracking-[0.2em] uppercase hover:bg-gold-light transition-all duration-300 flex items-center justify-center space-x-2 group shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)]"
                   >
                     <Calendar className="w-3.5 h-3.5" />
                     <span>Book Your Session</span>
@@ -158,7 +158,7 @@ export default function Home() {
                   {/* View Portfolio Button */}
                   <button
                     onClick={() => handleScrollTo("#portfolio")}
-                    className="relative w-full sm:w-auto px-8 py-3.5 bg-transparent border border-white/20 text-white font-bold text-xs tracking-[0.2em] uppercase hover:border-gold hover:text-gold transition-all duration-300 flex items-center justify-center space-x-2 group"
+                    className="relative w-full sm:w-auto min-h-[44px] px-8 py-3.5 bg-transparent border border-white/20 text-white font-bold text-xs tracking-[0.2em] uppercase hover:border-gold hover:text-gold transition-all duration-300 flex items-center justify-center space-x-2 group"
                   >
                     <Camera className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
                     <span>View Portfolio</span>
@@ -167,7 +167,7 @@ export default function Home() {
                   {/* Watch Films Button */}
                   <button
                     onClick={() => handleScrollTo("#films")}
-                    className="relative w-full sm:w-auto px-8 py-3.5 bg-[#111]/80 backdrop-blur-sm border border-gold/20 text-gold hover:text-primary font-bold text-xs tracking-[0.2em] uppercase flex items-center justify-center space-x-2 group overflow-hidden"
+                    className="relative w-full sm:w-auto min-h-[44px] px-8 py-3.5 bg-[#111]/80 backdrop-blur-sm border border-gold/20 text-gold hover:text-primary font-bold text-xs tracking-[0.2em] uppercase flex items-center justify-center space-x-2 group overflow-hidden"
                   >
                     {/* Sliding hover fill background */}
                     <span className="absolute inset-0 w-full h-full bg-gold transform scale-x-0 origin-left transition-transform duration-500 cubic-bezier(0.25, 1, 0.5, 1) group-hover:scale-x-100 -z-10" />

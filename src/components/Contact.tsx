@@ -73,7 +73,7 @@ export default function Contact() {
               <div className="space-y-4">
                 <a 
                   href="tel:+918008231832"
-                  className="flex items-start space-x-4 text-white/70 hover:text-gold transition-colors group"
+                  className="flex items-start space-x-4 text-white/70 hover:text-gold transition-colors group py-2 min-h-[44px]"
                 >
                   <Phone className="w-4.5 h-4.5 text-gold mt-1" />
                   <div>
@@ -90,7 +90,7 @@ export default function Contact() {
                   href="https://wa.me/918008231832"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-start space-x-4 text-white/70 hover:text-gold transition-colors group"
+                  className="flex items-start space-x-4 text-white/70 hover:text-gold transition-colors group py-2 min-h-[44px]"
                 >
                   <MessageCircle className="w-4.5 h-4.5 text-gold mt-1" />
                   <div>
@@ -105,7 +105,7 @@ export default function Contact() {
 
                 <a 
                   href="mailto:erlasatish32@gmail.com"
-                  className="flex items-start space-x-4 text-white/70 hover:text-gold transition-colors group"
+                  className="flex items-start space-x-4 text-white/70 hover:text-gold transition-colors group py-2 min-h-[44px]"
                 >
                   <Mail className="w-4.5 h-4.5 text-gold mt-1" />
                   <div>
@@ -168,7 +168,7 @@ export default function Contact() {
                       onChange={handleChange}
                       required
                       placeholder="e.g. Durgaprasad"
-                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors"
+                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white focus:outline-none focus:border-gold transition-colors"
                     />
                   </div>
 
@@ -183,7 +183,7 @@ export default function Contact() {
                       onChange={handleChange}
                       required
                       placeholder="e.g. +91 99999 99999"
-                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors"
+                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white focus:outline-none focus:border-gold transition-colors"
                     />
                   </div>
                 </div>
@@ -198,7 +198,7 @@ export default function Contact() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="e.g. client@example.com"
-                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors"
+                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white focus:outline-none focus:border-gold transition-colors"
                   />
                 </div>
 
@@ -210,7 +210,7 @@ export default function Contact() {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors appearance-none cursor-pointer"
+                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white focus:outline-none focus:border-gold transition-colors appearance-none cursor-pointer"
                   >
                     <option className="bg-[#111]" value="Wedding">Wedding Shoot</option>
                     <option className="bg-[#111]" value="Pre-Wedding">Pre-Wedding / Outdoor</option>
@@ -231,13 +231,13 @@ export default function Contact() {
                     required
                     rows={5}
                     placeholder="Tell us about dates, timeline plans, or preferred themes..."
-                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors resize-none"
+                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white focus:outline-none focus:border-gold transition-colors resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-4 bg-transparent border border-gold text-gold font-bold text-xs tracking-[0.3em] uppercase hover:bg-gold hover:text-primary transition-all duration-500 flex items-center justify-center space-x-2"
+                  className="w-full py-4 min-h-[44px] bg-transparent border border-gold text-gold font-bold text-xs tracking-[0.3em] uppercase hover:bg-gold hover:text-primary transition-all duration-500 flex items-center justify-center space-x-2"
                 >
                   {isSent ? (
                     <span className="inline-block w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
@@ -259,7 +259,7 @@ export default function Contact() {
         href="https://wa.me/918008231832"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-40 bg-green-600 hover:bg-green-500 text-white p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center group animate-bounce"
+        className="fixed bottom-6 right-6 z-40 bg-green-600 hover:bg-green-500 text-white p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center group animate-bounce min-h-[56px] min-w-[56px]"
         aria-label="Contact on WhatsApp"
       >
         <MessageCircle className="w-6 h-6" />

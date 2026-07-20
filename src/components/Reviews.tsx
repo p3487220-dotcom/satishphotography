@@ -209,10 +209,15 @@ export default function Reviews() {
               <button
                 key={idx}
                 onClick={() => setActiveIndex(idx)}
-                className={`h-1.5 transition-all duration-300 rounded-full ${
-                  idx === activeIndex ? "w-8 bg-gold" : "w-2.5 bg-white/20 hover:bg-white/40"
-                }`}
-              />
+                className="relative py-4 -my-4 px-2 -mx-2 group"
+                aria-label={`Go to slide ${idx + 1}`}
+              >
+                <div
+                  className={`h-1.5 transition-all duration-300 rounded-full ${
+                    idx === activeIndex ? "w-8 bg-gold" : "w-2.5 bg-white/20 group-hover:bg-white/40"
+                  }`}
+                />
+              </button>
             ))}
           </div>
         </div>
@@ -231,7 +236,7 @@ export default function Reviews() {
               <input
                 value={formState.name}
                 onChange={(e) => setFormState((prev) => ({ ...prev, name: e.target.value }))}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 min-h-[44px] text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
                 placeholder="Your name"
               />
             </label>
@@ -241,7 +246,7 @@ export default function Reviews() {
               <input
                 value={formState.role}
                 onChange={(e) => setFormState((prev) => ({ ...prev, role: e.target.value }))}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 min-h-[44px] text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
                 placeholder="Bride, Groom, Parent, Client..."
               />
             </label>
@@ -251,7 +256,7 @@ export default function Reviews() {
               <input
                 value={formState.location}
                 onChange={(e) => setFormState((prev) => ({ ...prev, location: e.target.value }))}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 min-h-[44px] text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
                 placeholder="City or venue"
               />
             </label>
@@ -261,7 +266,7 @@ export default function Reviews() {
               <select
                 value={formState.rating}
                 onChange={(e) => setFormState((prev) => ({ ...prev, rating: Number(e.target.value) }))}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 min-h-[44px] text-white outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
               >
                 {[5, 4, 3, 2, 1].map((value) => (
                   <option key={value} value={value}>{`${value} star${value > 1 ? "s" : ""}`}</option>
@@ -275,7 +280,7 @@ export default function Reviews() {
                 value={formState.text}
                 onChange={(e) => setFormState((prev) => ({ ...prev, text: e.target.value }))}
                 rows={4}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
+                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 min-h-[44px] text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
                 placeholder="Describe your experience in a few sentences"
               />
             </label>
@@ -287,7 +292,7 @@ export default function Reviews() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center justify-center rounded-full bg-gold px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#050505] transition hover:bg-[#d8b357] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-full bg-gold px-6 py-3 min-h-[44px] text-sm font-semibold uppercase tracking-[0.2em] text-[#050505] transition hover:bg-[#d8b357] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting ? "Submitting..." : "Send Review"}
               </button>

@@ -182,7 +182,7 @@ export default function Booking() {
                       onChange={handleInputChange}
                       required
                       placeholder="e.g. Durgaprasad"
-                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
+                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
                     />
                     <User className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
                   </div>
@@ -200,7 +200,7 @@ export default function Booking() {
                       onChange={handleInputChange}
                       required
                       placeholder="e.g. you@example.com"
-                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
+                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
                     />
                     <Mail className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
                   </div>
@@ -220,7 +220,7 @@ export default function Booking() {
                     onChange={handleInputChange}
                     required
                     placeholder="e.g. +91 99999 99999"
-                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
+                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
                   />
                   <User className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
                 </div>
@@ -236,7 +236,7 @@ export default function Booking() {
                     name="event_type"
                     value={formData.event_type}
                     onChange={handleInputChange}
-                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors appearance-none cursor-pointer pl-10 pr-10"
+                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white focus:outline-none focus:border-gold transition-colors appearance-none cursor-pointer pl-10 pr-10"
                   >
                     {EVENT_TYPES.map((pkg) => (
                       <option key={pkg.value} value={pkg.value} className="bg-[#111] text-white">
@@ -262,7 +262,7 @@ export default function Booking() {
                       value={formData.event_date}
                       onChange={handleInputChange}
                       required
-                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors pl-10 dark:[color-scheme:dark]"
+                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white focus:outline-none focus:border-gold transition-colors pl-10 dark:[color-scheme:dark]"
                     />
                     <Calendar className="w-4 h-4 text-white/20 absolute left-3 top-3.5 pointer-events-none" />
                   </div>
@@ -277,7 +277,7 @@ export default function Booking() {
                       name="event_time"
                       value={formData.event_time}
                       onChange={handleInputChange}
-                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-gold transition-colors appearance-none cursor-pointer pl-10 pr-10"
+                      className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white focus:outline-none focus:border-gold transition-colors appearance-none cursor-pointer pl-10 pr-10"
                     >
                       <option className="bg-[#111]" value="Morning (06:00 AM)">Morning (06:00 AM)</option>
                       <option className="bg-[#111]" value="Afternoon (12:00 PM)">Afternoon (12:00 PM)</option>
@@ -304,7 +304,7 @@ export default function Booking() {
                     onChange={handleInputChange}
                     required
                     placeholder="e.g. Piduguralla, Andhra Pradesh"
-                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
+                    className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors pl-10"
                   />
                   <MapPin className="w-4 h-4 text-white/20 absolute left-3 top-3.5" />
                 </div>
@@ -321,7 +321,7 @@ export default function Booking() {
                   onChange={handleInputChange}
                   rows={4}
                   placeholder="Tell us about your event theme, specific shots desired, or visual style requirements..."
-                  className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors resize-none"
+                  className="w-full bg-[#1c1c1c] border border-white/10 px-4 py-3 min-h-[44px] text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold transition-colors resize-none"
                 />
               </div>
 
@@ -341,7 +341,7 @@ export default function Booking() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 bg-transparent border border-gold text-gold font-bold text-xs tracking-[0.3em] uppercase hover:bg-gold hover:text-primary transition-all duration-500 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 min-h-[44px] bg-transparent border border-gold text-gold font-bold text-xs tracking-[0.3em] uppercase hover:bg-gold hover:text-primary transition-all duration-500 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>

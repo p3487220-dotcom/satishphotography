@@ -46,7 +46,7 @@ export default function Films() {
             href={CHANNEL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center space-x-3 px-8 py-3 border border-white/10 text-white hover:text-gold hover:border-gold/50 text-xs tracking-[0.2em] uppercase font-bold transition-all duration-300"
+            className="inline-flex items-center justify-center space-x-3 px-8 py-3 min-h-[44px] border border-white/10 text-white hover:text-gold hover:border-gold/50 text-xs tracking-[0.2em] uppercase font-bold transition-all duration-300 w-full sm:w-auto"
           >
             <Youtube className="w-4 h-4 text-red-600" />
             <span>Visit my official YouTube channel</span>

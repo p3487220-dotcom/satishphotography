@@ -95,7 +95,7 @@ export default function Navbar() {
           {/* Mobile Menu Icon */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden text-white hover:text-gold transition-colors duration-200"
+            className="lg:hidden text-white hover:text-gold transition-colors duration-200 p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -115,14 +115,14 @@ export default function Navbar() {
                 e.preventDefault();
                 handleScrollTo(link.href);
               }}
-              className="text-lg tracking-[0.25em] uppercase font-light text-white/80 hover:text-gold transition-colors duration-300"
+              className="text-lg tracking-[0.25em] uppercase font-light text-white/80 hover:text-gold transition-colors duration-300 py-2 min-h-[44px] flex items-center justify-center w-full"
             >
               {link.name}
             </a>
           ))}
           <button
             onClick={() => handleScrollTo("#booking")}
-            className="px-8 py-3 bg-transparent border border-gold text-gold text-xs tracking-[0.3em] uppercase hover:bg-gold hover:text-primary transition-all duration-300 font-bold"
+            className="px-8 py-3 min-h-[44px] flex items-center justify-center bg-transparent border border-gold text-gold text-xs tracking-[0.3em] uppercase hover:bg-gold hover:text-primary transition-all duration-300 font-bold mt-4 w-[200px]"
           >
             Book Session
           </button>
