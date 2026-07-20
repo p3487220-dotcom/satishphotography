@@ -44,9 +44,10 @@ export default function Home() {
     };
   }, []);
 
-  // Split heading for character-by-character letter reveal
+  // Split heading into words so wrapping happens only between complete words
   const title1 = "CAPTURING MEMORIES";
   const title2 = "Creating Timeless Stories";
+  const titleWords = title1.split(" ");
 
   const handleScrollTo = (id: string) => {
     if (lenisInstance) {
@@ -87,7 +88,7 @@ export default function Home() {
               <ThreeHero />
 
               {/* Foreground Hero Content Overlays */}
-              <div className="relative z-10 text-center px-6 max-w-5xl mx-auto flex flex-col items-center justify-center h-full pt-16">
+              <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 xl:px-10 w-full max-w-[min(92vw,1520px)] mx-auto flex flex-col items-center justify-center h-full pt-16 pb-20 sm:pt-20 lg:pt-24">
                 
                 {/* Micro Subtitle */}
                 <motion.span
@@ -100,23 +101,39 @@ export default function Home() {
                 </motion.span>
 
                 {/* Main Heading Row 1: Letter Reveal */}
-                <h1 className="text-3xl sm:text-6xl md:text-8xl font-serif font-extralight tracking-widest text-white mb-2 leading-tight md:leading-none uppercase select-none break-words max-w-[95vw]">
-                  {title1.split("").map((char, index) => (
-                    <motion.span
-                      key={index}
-                      initial={{ opacity: 0, filter: "blur(10px)" }}
-                      animate={{ opacity: 1, filter: "blur(0px)" }}
-                      transition={{
-                        delay: 1.0 + index * 0.05,
-                        duration: 0.8,
-                        ease: [0.16, 1, 0.3, 1]
-                      }}
-                      className="inline-block"
-                      style={{ marginRight: char === " " ? "0.3em" : "0.02em" }}
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
+                <h1 className="w-full max-w-[min(100%,1100px)] text-[clamp(2.6rem,6.6vw,6.5rem)] sm:text-[clamp(3.2rem,7vw,7.8rem)] lg:text-[clamp(4rem,8vw,9.2rem)] font-serif font-extralight tracking-[0.16em] sm:tracking-[0.24em] lg:tracking-[0.32em] text-white mb-3 leading-[0.8] sm:leading-[0.78] uppercase select-none">
+                  <div className="flex flex-wrap justify-center items-center gap-x-[0.14em] sm:gap-x-[0.18em]">
+                    {titleWords.map((word, wordIndex) => (
+                      <motion.span
+                        key={`${word}-${wordIndex}`}
+                        initial={{ opacity: 0, filter: "blur(10px)" }}
+                        animate={{ opacity: 1, filter: "blur(0px)" }}
+                        transition={{
+                          delay: 1.0 + wordIndex * 0.12,
+                          duration: 0.8,
+                          ease: [0.16, 1, 0.3, 1]
+                        }}
+                        className="hero-title-word"
+                      >
+                        {word.split("").map((char, charIndex) => (
+                          <motion.span
+                            key={`${word}-${charIndex}`}
+                            initial={{ opacity: 0, filter: "blur(10px)" }}
+                            animate={{ opacity: 1, filter: "blur(0px)" }}
+                            transition={{
+                              delay: 1.0 + (wordIndex * 0.12) + (charIndex * 0.03),
+                              duration: 0.7,
+                              ease: [0.16, 1, 0.3, 1]
+                            }}
+                            className="hero-title-char"
+                            style={{ marginRight: charIndex === word.length - 1 ? 0 : "0.02em" }}
+                          >
+                            {char}
+                          </motion.span>
+                        ))}
+                      </motion.span>
+                    ))}
+                  </div>
                 </h1>
 
                 {/* Main Heading Row 2: Fade Up & Blur Reveal */}
@@ -124,7 +141,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ delay: 1.8, duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
-                  className="text-xl sm:text-2xl md:text-4xl font-serif font-light italic tracking-wide text-gold-gradient mb-6"
+                  className="text-[clamp(1rem,2.3vw,1.7rem)] sm:text-[clamp(1.25rem,2.8vw,2.2rem)] font-serif font-light italic tracking-[0.16em] sm:tracking-[0.2em] text-gold-gradient mb-6"
                 >
                   {title2}
                 </motion.h2>
@@ -134,7 +151,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 2.2, duration: 1.0, ease: "easeOut" }}
-                  className="text-[11px] sm:text-xs text-white/50 tracking-[0.2em] uppercase max-w-xl mx-auto leading-relaxed mb-12 font-light"
+                  className="text-[11px] sm:text-xs text-white/50 tracking-[0.2em] uppercase max-w-2xl mx-auto leading-relaxed mb-10 sm:mb-12 font-light"
                 >
                   Bespoke fine-art visual execution based in Piduguralla. We write your moments onto luxury cinematic canvases.
                 </motion.p>

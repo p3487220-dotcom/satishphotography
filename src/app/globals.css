@@ -32,6 +32,18 @@ html, body {
   width: 6px;
 }
 
+.hero-title-word {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  align-items: baseline;
+  margin-right: 0.18em;
+}
+
+.hero-title-char {
+  display: inline-block;
+}
+
 ::-webkit-scrollbar-track {
   background: #050505;
 }
