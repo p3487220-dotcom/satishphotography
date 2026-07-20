@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Star, Quote } from "lucide-react";
 import { parseApiJson } from "@/lib/api";
 
@@ -60,16 +60,6 @@ export default function Reviews() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [submittedReviews, setSubmittedReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [formState, setFormState] = useState({
-    name: "",
-    role: "Client",
-    location: "",
-    rating: 5,
-    text: ""
-  });
   const sliderRef = useRef<HTMLDivElement>(null);
 
   const displayReviews = useMemo(
@@ -107,48 +97,6 @@ export default function Reviews() {
     return () => clearInterval(timer);
   }, [displayReviews.length]);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setFormError(null);
-    setFeedbackMessage(null);
-
-    if (!formState.name.trim() || !formState.text.trim()) {
-      setFormError("Please enter your name and a short review message.");
-      return;
-    }
-
-    if (formState.rating < 1 || formState.rating > 5) {
-      setFormError("Please select a rating from 1 to 5.");
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
-      const response = await fetch("/api/reviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formState)
-      });
-
-      const data = await parseApiJson<{ success?: boolean; review?: Review; error?: string }>(response);
-
-      if (!response.ok || !data.success || !data.review) {
-        setFormError(data.error || "Unable to submit your review. Please try again.");
-        return;
-      }
-
-      setSubmittedReviews((prev) => [data.review!, ...prev]);
-      setFeedbackMessage("Thank you! Your feedback is added to the review stream.");
-      setFormState({ name: "", role: "Client", location: "", rating: 5, text: "" });
-      setActiveIndex(0);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Unknown error occurred.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
   return (
     <section id="reviews" className="py-24 relative bg-primary overflow-hidden">
       <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-gold-radial opacity-10 pointer-events-none" />
@@ -162,7 +110,7 @@ export default function Reviews() {
             Words of Satisfaction
           </h2>
           <p className="mt-4 text-sm text-white/60 max-w-2xl mx-auto">
-            Share your own customer feedback and let future clients see real appreciation from your experience.
+            Real appreciation from real clients who experienced our work firsthand.
           </p>
           <div className="w-12 h-[1px] bg-gold mx-auto mt-6" />
         </div>
@@ -221,84 +169,7 @@ export default function Reviews() {
             ))}
           </div>
         </div>
-
-        <div className="mt-12 glass-panel p-8 md:p-12 border border-white/5">
-          <div className="mb-8 text-center">
-            <h3 className="text-2xl text-white font-semibold">Add your own review</h3>
-            <p className="text-sm text-white/60 max-w-2xl mx-auto mt-2">
-              Permission granted to share client appreciation. Submit your feedback and it will appear in the guest review feed.
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
-            <label className="flex flex-col text-white/70 text-sm">
-              Name
-              <input
-                value={formState.name}
-                onChange={(e) => setFormState((prev) => ({ ...prev, name: e.target.value }))}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                placeholder="Your name"
-              />
-            </label>
-
-            <label className="flex flex-col text-white/70 text-sm">
-              Event Role
-              <input
-                value={formState.role}
-                onChange={(e) => setFormState((prev) => ({ ...prev, role: e.target.value }))}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                placeholder="Bride, Groom, Parent, Client..."
-              />
-            </label>
-
-            <label className="flex flex-col text-white/70 text-sm">
-              Location
-              <input
-                value={formState.location}
-                onChange={(e) => setFormState((prev) => ({ ...prev, location: e.target.value }))}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                placeholder="City or venue"
-              />
-            </label>
-
-            <label className="flex flex-col text-white/70 text-sm">
-              Rating
-              <select
-                value={formState.rating}
-                onChange={(e) => setFormState((prev) => ({ ...prev, rating: Number(e.target.value) }))}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-              >
-                {[5, 4, 3, 2, 1].map((value) => (
-                  <option key={value} value={value}>{`${value} star${value > 1 ? "s" : ""}`}</option>
-                ))}
-              </select>
-            </label>
-
-            <label className="md:col-span-2 flex flex-col text-white/70 text-sm">
-              Your Appreciation
-              <textarea
-                value={formState.text}
-                onChange={(e) => setFormState((prev) => ({ ...prev, text: e.target.value }))}
-                rows={4}
-                className="mt-2 rounded-xl border border-white/10 bg-[#090909] px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
-                placeholder="Describe your experience in a few sentences"
-              />
-            </label>
-
-            <div className="md:col-span-2 flex flex-col gap-3">
-              {formError ? <p className="text-sm text-rose-400">{formError}</p> : null}
-              {feedbackMessage ? <p className="text-sm text-emerald-300">{feedbackMessage}</p> : null}
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex items-center justify-center rounded-full bg-gold px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#050505] transition hover:bg-[#d8b357] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {submitting ? "Submitting..." : "Send Review"}
-              </button>
-            </div>
-          </form>
-        </div>
+      </div>
     </section>
   );
-
+}
