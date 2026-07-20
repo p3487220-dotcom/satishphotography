@@ -221,7 +221,7 @@ export default function Reviews() {
             ))}
           </div>
         </div>
-        
+
         <div className="mt-12 glass-panel p-8 md:p-12 border border-white/5">
           <div className="mb-8 text-center">
             <h3 className="text-2xl text-white font-semibold">Add your own review</h3>
@@ -301,4 +301,4 @@ export default function Reviews() {
         </div>
     </section>
   );
-}
+
